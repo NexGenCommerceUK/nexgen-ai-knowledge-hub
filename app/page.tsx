@@ -1,4 +1,40 @@
-"use client"; import {useState} from "react";
-export default function Home(){const [context,setContext]=useState("NexGenCommerce builds AI-powered web applications, SaaS products and workflow automation for growing businesses. Standard support hours are Monday to Friday, 09:00–17:00 UK time."); const [question,setQuestion]=useState("What does NexGenCommerce build?"); const [answer,setAnswer]=useState(""); const [loading,setLoading]=useState(false);
-async function run(){setLoading(true);setAnswer("");const r=await fetch("/api/answer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({context,question})});const d=await r.json();setAnswer(d.answer||d.error);setLoading(false)}
-return <main className="shell"><section className="hero"><div><div className="eyebrow">NexGen Portfolio Project 01</div><h1>AI Knowledge Hub</h1><p>A secure-pattern business knowledge assistant that turns supplied company context into grounded answers through a server-side AI endpoint.</p><span className="pill">Next.js</span><span className="pill">TypeScript</span><span className="pill">OpenAI Responses API</span></div><div className="card"><div className="muted">Portfolio signal</div><div className="metric">Full-stack AI</div><p className="muted">Server-side secrets, API validation, graceful demo mode and deployment-ready structure.</p></div></section><section className="grid"><div className="card" style={{gridColumn:"span 2"}}><label>Business knowledge</label><textarea value={context} onChange={e=>setContext(e.target.value)}/><label>Question</label><input value={question} onChange={e=>setQuestion(e.target.value)}/><div style={{marginTop:14}}><button onClick={run} disabled={loading}>{loading?"Thinking…":"Ask the knowledge hub"}</button></div></div><div className="card"><b>Answer</b><div className="result" style={{marginTop:12}}>{answer||"Your grounded answer will appear here."}</div></div></section></main>}
+import { Container } from "../components/layout/container";
+import { Card } from "../components/ui/card";
+import { KnowledgeAssistant } from "../features/knowledge/components/knowledge-assistant";
+
+export default function Home() {
+  return (
+    <main>
+      <Container>
+        <section className="hero">
+          <div>
+            <div className="eyebrow">NexGen Portfolio Project 01</div>
+            <h1>AI Knowledge Hub</h1>
+            <p>
+              A business knowledge assistant with a typed API boundary, server-side AI access,
+              validation, predictable error handling and a foundation designed to grow into a
+              multi-tenant RAG SaaS product.
+            </p>
+            <div className="pill-row" aria-label="Technology stack">
+              <span className="pill">Next.js</span>
+              <span className="pill">TypeScript</span>
+              <span className="pill">OpenAI Responses API</span>
+              <span className="pill">Vitest</span>
+            </div>
+          </div>
+
+          <Card>
+            <div className="muted">Milestone 1</div>
+            <div className="metric">SaaS foundation</div>
+            <p className="muted">
+              Feature boundaries, shared types, request validation, standard API responses,
+              error handling and automated quality gates.
+            </p>
+          </Card>
+        </section>
+
+        <KnowledgeAssistant />
+      </Container>
+    </main>
+  );
+}

@@ -1,3 +1,6 @@
+import { getServerEnv } from "../env";
+import { AppError } from "../errors/app-error";
+
 type ResponseContent = {
   type?: string;
   text?: string;
@@ -14,44 +17,45 @@ type OpenAIResponse = {
 
 export async function askOpenAI(
   instructions: string,
-  input: string
+  input: string,
 ): Promise<string | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const env = getServerEnv();
 
-  if (!apiKey) {
+  if (!env.openAiApiKey) {
     return null;
   }
 
-  const model = process.env.OPENAI_MODEL || "gpt-5.6-luna";
-
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
-
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${env.openAiApiKey}`,
       "Content-Type": "application/json",
     },
-
     body: JSON.stringify({
-      model,
+      model: env.openAiModel,
       instructions,
       input,
     }),
+    cache: "no-store",
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
+    const body = await response.text();
+    console.error("OpenAI API error", {
+      status: response.status,
+      body: body.slice(0, 500),
+    });
 
-    console.error("OpenAI API error:", response.status, errorBody);
-
-    throw new Error(
-      `OpenAI request failed with status ${response.status}`
+    throw new AppError(
+      "AI_UNAVAILABLE",
+      "The AI service is temporarily unavailable.",
+      502,
     );
   }
 
   const data = (await response.json()) as OpenAIResponse;
 
-  if (typeof data.output_text === "string") {
+  if (typeof data.output_text === "string" && data.output_text.trim()) {
     return data.output_text.trim();
   }
 
@@ -60,10 +64,10 @@ export async function askOpenAI(
       ?.flatMap((output) => output.content ?? [])
       .filter(
         (content) =>
-          content.type === "output_text" &&
-          typeof content.text === "string"
+          content.type === "output_text" && typeof content.text === "string",
       )
       .map((content) => content.text as string) ?? [];
 
-  return texts.join("\n").trim();
+  const joined = texts.join("\n").trim();
+  return joined || null;
 }
